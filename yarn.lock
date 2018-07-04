@@ -107,7 +107,7 @@
     esutils "^2.0.2"
     js-tokens "^3.0.0"
 
-"@fortawesome/angular-fontawesome@3.1.2":
+"@fortawesome/angular-fontawesome@0.1.1":
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/@fortawesome/angular-fontawesome/-/angular-fontawesome-0.1.1.tgz#18270a06553b93f357cd0a54cabe5fa1cf633ca5"
   dependencies:
