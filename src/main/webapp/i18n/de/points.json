@@ -1,0 +1,27 @@
+
+{
+    "twentyonepointsApp": {
+        "points" : {
+            "home": {
+                "title": "Points",
+                "createLabel": "Points erstellen",
+                "createOrEditLabel": "Points erstellen oder bearbeiten"
+            },
+            "created": "Points erstellt mit ID {{ param }}",
+            "updated": "Points aktualisiert mit ID {{ param }}",
+            "deleted": "Points gelöscht mit ID {{ param }}",
+            "delete": {
+                "question": "Soll Points {{ id }} wirklich dauerhaft gelöscht werden?"
+            },
+            "detail": {
+                "title": "Points"
+            },
+            "timestamp": "Timestamp",
+            "exercise": "Exercise",
+            "meals": "Meals",
+            "alcohol": "Alcohol",
+            "notes": "Notes",
+            "user": "User"
+        }
+    }
+}

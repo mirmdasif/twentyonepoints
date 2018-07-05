@@ -38,6 +38,10 @@ public class CacheConfiguration {
             cm.createCache(net.asifhossain.twentyonepoints.domain.User.class.getName(), jcacheConfiguration);
             cm.createCache(net.asifhossain.twentyonepoints.domain.Authority.class.getName(), jcacheConfiguration);
             cm.createCache(net.asifhossain.twentyonepoints.domain.User.class.getName() + ".authorities", jcacheConfiguration);
+            cm.createCache(net.asifhossain.twentyonepoints.domain.Points.class.getName(), jcacheConfiguration);
+            cm.createCache(net.asifhossain.twentyonepoints.domain.Weight.class.getName(), jcacheConfiguration);
+            cm.createCache(net.asifhossain.twentyonepoints.domain.BloodPressure.class.getName(), jcacheConfiguration);
+            cm.createCache(net.asifhossain.twentyonepoints.domain.Preferences.class.getName(), jcacheConfiguration);
             // jhipster-needle-ehcache-add-entry
         };
     }
