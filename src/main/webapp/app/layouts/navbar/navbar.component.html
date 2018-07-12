@@ -53,6 +53,12 @@
                             <span jhiTranslate="global.menu.entities.preferences">Preferences</span>
                         </a>
                     </li>
+                    <li>
+                        <a class="dropdown-item" routerLink="waist" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" (click)="collapseNavbar()">
+                            <fa-icon [icon]="'asterisk'" [fixedWidth]="true"></fa-icon>
+                            <span jhiTranslate="global.menu.entities.waist">Waist</span>
+                        </a>
+                    </li>
                     <!-- jhipster-needle-add-entity-to-menu - JHipster will add entities to the menu here -->
                 </ul>
             </li>

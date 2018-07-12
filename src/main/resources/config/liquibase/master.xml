@@ -9,10 +9,12 @@
     <include file="config/liquibase/changelog/20180705061810_added_entity_Weight.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20180705090139_added_entity_BloodPressure.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20180705091103_added_entity_Preferences.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180712105807_added_entity_Waist.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <include file="config/liquibase/changelog/20180705051416_added_entity_constraints_Points.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20180705061810_added_entity_constraints_Weight.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20180705090139_added_entity_constraints_BloodPressure.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20180705091103_added_entity_constraints_Preferences.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20180712105807_added_entity_constraints_Waist.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
 </databaseChangeLog>

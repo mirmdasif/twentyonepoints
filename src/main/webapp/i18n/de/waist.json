@@ -1,0 +1,25 @@
+
+{
+    "twentyonepointsApp": {
+        "waist" : {
+            "home": {
+                "title": "Waists",
+                "createLabel": "Waist erstellen",
+                "createOrEditLabel": "Waist erstellen oder bearbeiten"
+            },
+            "created": "Waist erstellt mit ID {{ param }}",
+            "updated": "Waist aktualisiert mit ID {{ param }}",
+            "deleted": "Waist gelöscht mit ID {{ param }}",
+            "delete": {
+                "question": "Soll Waist {{ id }} wirklich dauerhaft gelöscht werden?"
+            },
+            "detail": {
+                "title": "Waist"
+            },
+            "date": "Date",
+            "length": "Length",
+            "unit": "Unit",
+            "user": "User"
+        }
+    }
+}

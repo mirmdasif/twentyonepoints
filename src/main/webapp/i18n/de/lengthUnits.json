@@ -1,0 +1,9 @@
+{
+    "twentyonepointsApp": {
+        "LengthUnits" : {
+            "null": "",
+            "INCH": "INCH",
+            "CM": "CM"
+        }
+    }
+}

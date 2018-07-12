@@ -1,0 +1,42 @@
+{
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "relationships": [
+        {
+            "relationshipName": "user",
+            "otherEntityName": "user",
+            "relationshipType": "many-to-one",
+            "relationshipValidateRules": [
+                "required"
+            ],
+            "otherEntityField": "login",
+            "ownerSide": true,
+            "otherEntityRelationshipName": "waist"
+        }
+    ],
+    "fields": [
+        {
+            "fieldName": "date",
+            "fieldType": "LocalDate"
+        },
+        {
+            "fieldName": "length",
+            "fieldType": "Double"
+        },
+        {
+            "fieldName": "unit",
+            "fieldType": "LengthUnits",
+            "fieldValues": "INCH,CM",
+            "fieldValidateRules": [
+                "required"
+            ]
+        }
+    ],
+    "changelogDate": "20180712105807",
+    "dto": "no",
+    "searchEngine": false,
+    "service": "no",
+    "entityTableName": "waist",
+    "jpaMetamodelFiltering": false,
+    "pagination": "infinite-scroll"
+}

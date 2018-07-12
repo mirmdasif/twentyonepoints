@@ -1,0 +1,62 @@
+<div>
+    <h2 id="page-heading">
+        <span jhiTranslate="twentyonepointsApp.waist.home.title">Waists</span>
+        <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-waist" [routerLink]="['/waist/new']">
+            <fa-icon [icon]="'plus'"></fa-icon>
+            <span  jhiTranslate="twentyonepointsApp.waist.home.createLabel">
+            Create new Waist
+            </span>
+        </button>
+    </h2>
+    <jhi-alert></jhi-alert>
+    <br/>
+    <div class="table-responsive" *ngIf="waists">
+        <table class="table table-striped">
+            <thead>
+            <tr jhiSort [(predicate)]="predicate" [(ascending)]="reverse" [callback]="reset.bind(this)">
+            <th jhiSortBy="id"><span jhiTranslate="global.field.id">ID</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="date"><span jhiTranslate="twentyonepointsApp.waist.date">Date</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="length"><span jhiTranslate="twentyonepointsApp.waist.length">Length</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="unit"><span jhiTranslate="twentyonepointsApp.waist.unit">Unit</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th jhiSortBy="user.login"><span jhiTranslate="twentyonepointsApp.waist.user">User</span> <fa-icon [icon]="'sort'"></fa-icon></th>
+            <th></th>
+            </tr>
+            </thead>
+            <tbody infinite-scroll (scrolled)="loadPage(page + 1)" [infiniteScrollDisabled]="page >= links['last']" [infiniteScrollDistance]="0">
+            <tr *ngFor="let waist of waists ;trackBy: trackId">
+                <td><a [routerLink]="['/waist', waist.id, 'view' ]">{{waist.id}}</a></td>
+                <td>{{waist.date | date:'mediumDate'}}</td>
+                <td>{{waist.length}}</td>
+                <td jhiTranslate="{{'twentyonepointsApp.LengthUnits.' + waist.unit}}">{{waist.unit}}</td>
+                <td>
+                    {{waist.user?.login}}
+                </td>
+                <td class="text-right">
+                    <div class="btn-group flex-btn-group-container">
+                        <button type="submit"
+                                [routerLink]="['/waist', waist.id, 'view' ]"
+                                class="btn btn-info btn-sm">
+                            <fa-icon [icon]="'eye'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.view">View</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/waist', waist.id, 'edit']"
+                                class="btn btn-primary btn-sm">
+                            <fa-icon [icon]="'pencil-alt'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Edit</span>
+                        </button>
+                        <button type="submit"
+                                [routerLink]="['/', { outlets: { popup: 'waist/'+ waist.id + '/delete'} }]"
+                                replaceUrl="true"
+                                queryParamsHandling="merge"
+                                class="btn btn-danger btn-sm">
+                            <fa-icon [icon]="'times'"></fa-icon>
+                            <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Delete</span>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

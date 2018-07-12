@@ -4,6 +4,7 @@ import { TwentyonepointsPointsModule } from './points/points.module';
 import { TwentyonepointsWeightModule } from './weight/weight.module';
 import { TwentyonepointsBloodPressureModule } from './blood-pressure/blood-pressure.module';
 import { TwentyonepointsPreferencesModule } from './preferences/preferences.module';
+import { TwentyonepointsWaistModule } from './waist/waist.module';
 /* jhipster-needle-add-entity-module-import - JHipster will add entity modules imports here */
 
 @NgModule({
@@ -13,6 +14,7 @@ import { TwentyonepointsPreferencesModule } from './preferences/preferences.modu
         TwentyonepointsWeightModule,
         TwentyonepointsBloodPressureModule,
         TwentyonepointsPreferencesModule,
+        TwentyonepointsWaistModule,
         /* jhipster-needle-add-entity-module - JHipster will add entity modules here */
     ],
     declarations: [],
