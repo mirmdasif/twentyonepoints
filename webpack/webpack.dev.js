@@ -101,7 +101,7 @@ module.exports = webpackMerge(commonConfig({ env: ENV }), {
                 target: 'http://localhost:9060'
             }
         }, {
-            reload: false
+            reload: true
         }),
         new webpack.ContextReplacementPlugin(
             /angular(\\|\/)core(\\|\/)/,
