@@ -6,6 +6,7 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 import javax.persistence.*;
 
+import org.springframework.data.elasticsearch.annotations.Document;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.Objects;
@@ -16,6 +17,7 @@ import java.util.Objects;
 @Entity
 @Table(name = "weight")
 @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+@Document(indexName = "weight")
 public class Weight implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -25,8 +27,8 @@ public class Weight implements Serializable {
     @SequenceGenerator(name = "sequenceGenerator")
     private Long id;
 
-    @Column(name = "jhi_date")
-    private LocalDate date;
+    @Column(name = "jhi_timestamp")
+    private LocalDate timestamp;
 
     @Column(name = "weight")
     private Integer weight;
@@ -44,17 +46,17 @@ public class Weight implements Serializable {
         this.id = id;
     }
 
-    public LocalDate getDate() {
-        return date;
+    public LocalDate getTimestamp() {
+        return timestamp;
     }
 
-    public Weight date(LocalDate date) {
-        this.date = date;
+    public Weight timestamp(LocalDate timestamp) {
+        this.timestamp = timestamp;
         return this;
     }
 
-    public void setDate(LocalDate date) {
-        this.date = date;
+    public void setTimestamp(LocalDate timestamp) {
+        this.timestamp = timestamp;
     }
 
     public Integer getWeight() {
@@ -108,7 +110,7 @@ public class Weight implements Serializable {
     public String toString() {
         return "Weight{" +
             "id=" + getId() +
-            ", date='" + getDate() + "'" +
+            ", timestamp='" + getTimestamp() + "'" +
             ", weight=" + getWeight() +
             "}";
     }

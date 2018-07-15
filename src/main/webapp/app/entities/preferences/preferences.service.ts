@@ -12,6 +12,7 @@ type EntityArrayResponseType = HttpResponse<IPreferences[]>;
 @Injectable({ providedIn: 'root' })
 export class PreferencesService {
     private resourceUrl = SERVER_API_URL + 'api/preferences';
+    private resourceSearchUrl = SERVER_API_URL + 'api/_search/preferences';
 
     constructor(private http: HttpClient) {}
 
@@ -34,5 +35,10 @@ export class PreferencesService {
 
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+    }
+
+    search(req?: any): Observable<EntityArrayResponseType> {
+        const options = createRequestOption(req);
+        return this.http.get<IPreferences[]>(this.resourceSearchUrl, { params: options, observe: 'response' });
     }
 }

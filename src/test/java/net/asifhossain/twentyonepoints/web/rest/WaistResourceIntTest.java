@@ -5,6 +5,7 @@ import net.asifhossain.twentyonepoints.TwentyonepointsApp;
 import net.asifhossain.twentyonepoints.domain.Waist;
 import net.asifhossain.twentyonepoints.domain.User;
 import net.asifhossain.twentyonepoints.repository.WaistRepository;
+import net.asifhossain.twentyonepoints.repository.search.WaistSearchRepository;
 import net.asifhossain.twentyonepoints.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -13,6 +14,8 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -24,12 +27,15 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.List;
 
 
 import static net.asifhossain.twentyonepoints.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -56,6 +62,14 @@ public class WaistResourceIntTest {
     private WaistRepository waistRepository;
 
 
+    /**
+     * This repository is mocked in the net.asifhossain.twentyonepoints.repository.search test package.
+     *
+     * @see net.asifhossain.twentyonepoints.repository.search.WaistSearchRepositoryMockConfiguration
+     */
+    @Autowired
+    private WaistSearchRepository mockWaistSearchRepository;
+
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
@@ -75,7 +89,7 @@ public class WaistResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final WaistResource waistResource = new WaistResource(waistRepository);
+        final WaistResource waistResource = new WaistResource(waistRepository, mockWaistSearchRepository);
         this.restWaistMockMvc = MockMvcBuilders.standaloneSetup(waistResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -125,6 +139,9 @@ public class WaistResourceIntTest {
         assertThat(testWaist.getDate()).isEqualTo(DEFAULT_DATE);
         assertThat(testWaist.getLength()).isEqualTo(DEFAULT_LENGTH);
         assertThat(testWaist.getUnit()).isEqualTo(DEFAULT_UNIT);
+
+        // Validate the Waist in Elasticsearch
+        verify(mockWaistSearchRepository, times(1)).save(testWaist);
     }
 
     @Test
@@ -144,6 +161,9 @@ public class WaistResourceIntTest {
         // Validate the Waist in the database
         List<Waist> waistList = waistRepository.findAll();
         assertThat(waistList).hasSize(databaseSizeBeforeCreate);
+
+        // Validate the Waist in Elasticsearch
+        verify(mockWaistSearchRepository, times(0)).save(waist);
     }
 
     @Test
@@ -233,6 +253,9 @@ public class WaistResourceIntTest {
         assertThat(testWaist.getDate()).isEqualTo(UPDATED_DATE);
         assertThat(testWaist.getLength()).isEqualTo(UPDATED_LENGTH);
         assertThat(testWaist.getUnit()).isEqualTo(UPDATED_UNIT);
+
+        // Validate the Waist in Elasticsearch
+        verify(mockWaistSearchRepository, times(1)).save(testWaist);
     }
 
     @Test
@@ -251,6 +274,9 @@ public class WaistResourceIntTest {
         // Validate the Waist in the database
         List<Waist> waistList = waistRepository.findAll();
         assertThat(waistList).hasSize(databaseSizeBeforeUpdate);
+
+        // Validate the Waist in Elasticsearch
+        verify(mockWaistSearchRepository, times(0)).save(waist);
     }
 
     @Test
@@ -269,6 +295,26 @@ public class WaistResourceIntTest {
         // Validate the database is empty
         List<Waist> waistList = waistRepository.findAll();
         assertThat(waistList).hasSize(databaseSizeBeforeDelete - 1);
+
+        // Validate the Waist in Elasticsearch
+        verify(mockWaistSearchRepository, times(1)).deleteById(waist.getId());
+    }
+
+    @Test
+    @Transactional
+    public void searchWaist() throws Exception {
+        // Initialize the database
+        waistRepository.saveAndFlush(waist);
+        when(mockWaistSearchRepository.search(queryStringQuery("id:" + waist.getId()), PageRequest.of(0, 20)))
+            .thenReturn(new PageImpl<>(Collections.singletonList(waist), PageRequest.of(0, 1), 1));
+        // Search the waist
+        restWaistMockMvc.perform(get("/api/_search/waists?query=id:" + waist.getId()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(waist.getId().intValue())))
+            .andExpect(jsonPath("$.[*].date").value(hasItem(DEFAULT_DATE.toString())))
+            .andExpect(jsonPath("$.[*].length").value(hasItem(DEFAULT_LENGTH.doubleValue())))
+            .andExpect(jsonPath("$.[*].unit").value(hasItem(DEFAULT_UNIT.toString())));
     }
 
     @Test

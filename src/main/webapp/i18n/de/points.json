@@ -5,7 +5,8 @@
             "home": {
                 "title": "Points",
                 "createLabel": "Points erstellen",
-                "createOrEditLabel": "Points erstellen oder bearbeiten"
+                "createOrEditLabel": "Points erstellen oder bearbeiten",
+                "search": "Suche nach Points"
             },
             "created": "Points erstellt mit ID {{ param }}",
             "updated": "Points aktualisiert mit ID {{ param }}",

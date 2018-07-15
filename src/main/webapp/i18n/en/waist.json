@@ -5,7 +5,8 @@
             "home": {
                 "title": "Waists",
                 "createLabel": "Create a new Waist",
-                "createOrEditLabel": "Create or edit a Waist"
+                "createOrEditLabel": "Create or edit a Waist",
+                "search": "Search for Waist"
             },
             "created": "A new Waist is created with identifier {{ param }}",
             "updated": "A Waist is updated with identifier {{ param }}",

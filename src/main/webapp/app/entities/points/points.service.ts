@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import 'rxjs/add/operator/map';
 import * as moment from 'moment';
 import { DATE_FORMAT } from 'app/shared/constants/input.constants';
 
@@ -15,6 +14,7 @@ type EntityArrayResponseType = HttpResponse<IPoints[]>;
 @Injectable({ providedIn: 'root' })
 export class PointsService {
     private resourceUrl = SERVER_API_URL + 'api/points';
+    private resourceSearchUrl = SERVER_API_URL + 'api/_search/points';
 
     constructor(private http: HttpClient) {}
 
@@ -47,6 +47,13 @@ export class PointsService {
 
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+    }
+
+    search(req?: any): Observable<EntityArrayResponseType> {
+        const options = createRequestOption(req);
+        return this.http
+            .get<IPoints[]>(this.resourceSearchUrl, { params: options, observe: 'response' })
+            .map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res));
     }
 
     private convertDateFromClient(points: IPoints): IPoints {

@@ -7,11 +7,11 @@
             "jhipster-needle-menu-add-element": "JHipster will add additional menu entries here (do not translate!)",
             "entities": {
                 "main": "Entities",
-                "points": "Points",
-                "weight": "Weight",
                 "bloodPressure": "Blood Pressure",
+                "points": "Points",
                 "preferences": "Preferences",
                 "waist": "Waist",
+                "weight": "Weight",
                 "jhipster-needle-menu-add-entry": "JHipster will add additional entities here (do not translate!)"
             },
             "account": {

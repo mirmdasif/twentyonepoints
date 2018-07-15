@@ -14,6 +14,7 @@ type EntityArrayResponseType = HttpResponse<IWaist[]>;
 @Injectable({ providedIn: 'root' })
 export class WaistService {
     private resourceUrl = SERVER_API_URL + 'api/waists';
+    private resourceSearchUrl = SERVER_API_URL + 'api/_search/waists';
 
     constructor(private http: HttpClient) {}
 
@@ -46,6 +47,13 @@ export class WaistService {
 
     delete(id: number): Observable<HttpResponse<any>> {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
+    }
+
+    search(req?: any): Observable<EntityArrayResponseType> {
+        const options = createRequestOption(req);
+        return this.http
+            .get<IWaist[]>(this.resourceSearchUrl, { params: options, observe: 'response' })
+            .map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res));
     }
 
     private convertDateFromClient(waist: IWaist): IWaist {

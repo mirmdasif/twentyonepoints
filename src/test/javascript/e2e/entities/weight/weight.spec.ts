@@ -30,8 +30,8 @@ describe('Weight e2e test', () => {
 
     it('should create and save Weights', () => {
         weightComponentsPage.clickOnCreateButton();
-        weightUpdatePage.setDateInput('2000-12-31');
-        expect(weightUpdatePage.getDateInput()).toMatch('2000-12-31');
+        weightUpdatePage.setTimestampInput('2000-12-31');
+        expect(weightUpdatePage.getTimestampInput()).toMatch('2000-12-31');
         weightUpdatePage.setWeightInput('5');
         expect(weightUpdatePage.getWeightInput()).toMatch('5');
         weightUpdatePage.userSelectLastOption();

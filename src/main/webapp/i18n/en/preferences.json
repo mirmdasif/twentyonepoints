@@ -5,7 +5,8 @@
             "home": {
                 "title": "Preferences",
                 "createLabel": "Create a new Preferences",
-                "createOrEditLabel": "Create or edit a Preferences"
+                "createOrEditLabel": "Create or edit a Preferences",
+                "search": "Search for Preferences"
             },
             "created": "A new Preferences is created with identifier {{ param }}",
             "updated": "A Preferences is updated with identifier {{ param }}",

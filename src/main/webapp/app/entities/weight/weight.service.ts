@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import 'rxjs/add/operator/map';
 import * as moment from 'moment';
 import { DATE_FORMAT } from 'app/shared/constants/input.constants';
 
@@ -15,6 +14,7 @@ type EntityArrayResponseType = HttpResponse<IWeight[]>;
 @Injectable({ providedIn: 'root' })
 export class WeightService {
     private resourceUrl = SERVER_API_URL + 'api/weights';
+    private resourceSearchUrl = SERVER_API_URL + 'api/_search/weights';
 
     constructor(private http: HttpClient) {}
 
@@ -49,21 +49,28 @@ export class WeightService {
         return this.http.delete<any>(`${this.resourceUrl}/${id}`, { observe: 'response' });
     }
 
+    search(req?: any): Observable<EntityArrayResponseType> {
+        const options = createRequestOption(req);
+        return this.http
+            .get<IWeight[]>(this.resourceSearchUrl, { params: options, observe: 'response' })
+            .map((res: EntityArrayResponseType) => this.convertDateArrayFromServer(res));
+    }
+
     private convertDateFromClient(weight: IWeight): IWeight {
         const copy: IWeight = Object.assign({}, weight, {
-            date: weight.date != null && weight.date.isValid() ? weight.date.format(DATE_FORMAT) : null
+            timestamp: weight.timestamp != null && weight.timestamp.isValid() ? weight.timestamp.format(DATE_FORMAT) : null
         });
         return copy;
     }
 
     private convertDateFromServer(res: EntityResponseType): EntityResponseType {
-        res.body.date = res.body.date != null ? moment(res.body.date) : null;
+        res.body.timestamp = res.body.timestamp != null ? moment(res.body.timestamp) : null;
         return res;
     }
 
     private convertDateArrayFromServer(res: EntityArrayResponseType): EntityArrayResponseType {
         res.body.forEach((weight: IWeight) => {
-            weight.date = weight.date != null ? moment(weight.date) : null;
+            weight.timestamp = weight.timestamp != null ? moment(weight.timestamp) : null;
         });
         return res;
     }

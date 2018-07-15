@@ -3,6 +3,7 @@ package net.asifhossain.twentyonepoints.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import net.asifhossain.twentyonepoints.domain.Preferences;
 import net.asifhossain.twentyonepoints.repository.PreferencesRepository;
+import net.asifhossain.twentyonepoints.repository.search.PreferencesSearchRepository;
 import net.asifhossain.twentyonepoints.web.rest.errors.BadRequestAlertException;
 import net.asifhossain.twentyonepoints.web.rest.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
@@ -17,6 +18,10 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing Preferences.
@@ -31,8 +36,11 @@ public class PreferencesResource {
 
     private final PreferencesRepository preferencesRepository;
 
-    public PreferencesResource(PreferencesRepository preferencesRepository) {
+    private final PreferencesSearchRepository preferencesSearchRepository;
+
+    public PreferencesResource(PreferencesRepository preferencesRepository, PreferencesSearchRepository preferencesSearchRepository) {
         this.preferencesRepository = preferencesRepository;
+        this.preferencesSearchRepository = preferencesSearchRepository;
     }
 
     /**
@@ -50,6 +58,7 @@ public class PreferencesResource {
             throw new BadRequestAlertException("A new preferences cannot already have an ID", ENTITY_NAME, "idexists");
         }
         Preferences result = preferencesRepository.save(preferences);
+        preferencesSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/preferences/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -72,6 +81,7 @@ public class PreferencesResource {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         Preferences result = preferencesRepository.save(preferences);
+        preferencesSearchRepository.save(result);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, preferences.getId().toString()))
             .body(result);
@@ -115,6 +125,24 @@ public class PreferencesResource {
         log.debug("REST request to delete Preferences : {}", id);
 
         preferencesRepository.deleteById(id);
+        preferencesSearchRepository.deleteById(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
+
+    /**
+     * SEARCH  /_search/preferences?query=:query : search for the preferences corresponding
+     * to the query.
+     *
+     * @param query the query of the preferences search
+     * @return the result of the search
+     */
+    @GetMapping("/_search/preferences")
+    @Timed
+    public List<Preferences> searchPreferences(@RequestParam String query) {
+        log.debug("REST request to search Preferences for query {}", query);
+        return StreamSupport
+            .stream(preferencesSearchRepository.search(queryStringQuery(query)).spliterator(), false)
+            .collect(Collectors.toList());
+    }
+
 }

@@ -33,7 +33,7 @@
     ],
     "changelogDate": "20180705091103",
     "dto": "no",
-    "searchEngine": false,
+    "searchEngine": "elasticsearch",
     "service": "no",
     "entityTableName": "preferences",
     "jpaMetamodelFiltering": false,

@@ -17,7 +17,7 @@ export class WeightUpdateComponent implements OnInit {
     isSaving: boolean;
 
     users: IUser[];
-    dateDp: any;
+    timestampDp: any;
 
     constructor(
         private jhiAlertService: JhiAlertService,

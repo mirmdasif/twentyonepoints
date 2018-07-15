@@ -3,6 +3,7 @@ package net.asifhossain.twentyonepoints.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import net.asifhossain.twentyonepoints.domain.BloodPressure;
 import net.asifhossain.twentyonepoints.repository.BloodPressureRepository;
+import net.asifhossain.twentyonepoints.repository.search.BloodPressureSearchRepository;
 import net.asifhossain.twentyonepoints.web.rest.errors.BadRequestAlertException;
 import net.asifhossain.twentyonepoints.web.rest.util.HeaderUtil;
 import net.asifhossain.twentyonepoints.web.rest.util.PaginationUtil;
@@ -21,6 +22,10 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
+import static org.elasticsearch.index.query.QueryBuilders.*;
 
 /**
  * REST controller for managing BloodPressure.
@@ -35,8 +40,11 @@ public class BloodPressureResource {
 
     private final BloodPressureRepository bloodPressureRepository;
 
-    public BloodPressureResource(BloodPressureRepository bloodPressureRepository) {
+    private final BloodPressureSearchRepository bloodPressureSearchRepository;
+
+    public BloodPressureResource(BloodPressureRepository bloodPressureRepository, BloodPressureSearchRepository bloodPressureSearchRepository) {
         this.bloodPressureRepository = bloodPressureRepository;
+        this.bloodPressureSearchRepository = bloodPressureSearchRepository;
     }
 
     /**
@@ -54,6 +62,7 @@ public class BloodPressureResource {
             throw new BadRequestAlertException("A new bloodPressure cannot already have an ID", ENTITY_NAME, "idexists");
         }
         BloodPressure result = bloodPressureRepository.save(bloodPressure);
+        bloodPressureSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/blood-pressures/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -76,6 +85,7 @@ public class BloodPressureResource {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
         BloodPressure result = bloodPressureRepository.save(bloodPressure);
+        bloodPressureSearchRepository.save(result);
         return ResponseEntity.ok()
             .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, bloodPressure.getId().toString()))
             .body(result);
@@ -122,6 +132,25 @@ public class BloodPressureResource {
         log.debug("REST request to delete BloodPressure : {}", id);
 
         bloodPressureRepository.deleteById(id);
+        bloodPressureSearchRepository.deleteById(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
+
+    /**
+     * SEARCH  /_search/blood-pressures?query=:query : search for the bloodPressure corresponding
+     * to the query.
+     *
+     * @param query the query of the bloodPressure search
+     * @param pageable the pagination information
+     * @return the result of the search
+     */
+    @GetMapping("/_search/blood-pressures")
+    @Timed
+    public ResponseEntity<List<BloodPressure>> searchBloodPressures(@RequestParam String query, Pageable pageable) {
+        log.debug("REST request to search for a page of BloodPressures for query {}", query);
+        Page<BloodPressure> page = bloodPressureSearchRepository.search(queryStringQuery(query), pageable);
+        HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, page, "/api/_search/blood-pressures");
+        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+    }
+
 }

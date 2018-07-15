@@ -5,7 +5,8 @@
             "home": {
                 "title": "Blood Pressures",
                 "createLabel": "Create a new Blood Pressure",
-                "createOrEditLabel": "Create or edit a Blood Pressure"
+                "createOrEditLabel": "Create or edit a Blood Pressure",
+                "search": "Search for Blood Pressure"
             },
             "created": "A new Blood Pressure is created with identifier {{ param }}",
             "updated": "A Blood Pressure is updated with identifier {{ param }}",

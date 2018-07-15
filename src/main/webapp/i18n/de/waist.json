@@ -5,7 +5,8 @@
             "home": {
                 "title": "Waists",
                 "createLabel": "Waist erstellen",
-                "createOrEditLabel": "Waist erstellen oder bearbeiten"
+                "createOrEditLabel": "Waist erstellen oder bearbeiten",
+                "search": "Suche nach Waist"
             },
             "created": "Waist erstellt mit ID {{ param }}",
             "updated": "Waist aktualisiert mit ID {{ param }}",

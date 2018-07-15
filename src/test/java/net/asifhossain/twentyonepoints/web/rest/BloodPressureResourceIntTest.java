@@ -4,6 +4,7 @@ import net.asifhossain.twentyonepoints.TwentyonepointsApp;
 
 import net.asifhossain.twentyonepoints.domain.BloodPressure;
 import net.asifhossain.twentyonepoints.repository.BloodPressureRepository;
+import net.asifhossain.twentyonepoints.repository.search.BloodPressureSearchRepository;
 import net.asifhossain.twentyonepoints.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -12,6 +13,8 @@ import org.junit.runner.RunWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.web.PageableHandlerMethodArgumentResolver;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -23,12 +26,15 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.Collections;
 import java.util.List;
 
 
 import static net.asifhossain.twentyonepoints.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -54,6 +60,14 @@ public class BloodPressureResourceIntTest {
     private BloodPressureRepository bloodPressureRepository;
 
 
+    /**
+     * This repository is mocked in the net.asifhossain.twentyonepoints.repository.search test package.
+     *
+     * @see net.asifhossain.twentyonepoints.repository.search.BloodPressureSearchRepositoryMockConfiguration
+     */
+    @Autowired
+    private BloodPressureSearchRepository mockBloodPressureSearchRepository;
+
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
@@ -73,7 +87,7 @@ public class BloodPressureResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final BloodPressureResource bloodPressureResource = new BloodPressureResource(bloodPressureRepository);
+        final BloodPressureResource bloodPressureResource = new BloodPressureResource(bloodPressureRepository, mockBloodPressureSearchRepository);
         this.restBloodPressureMockMvc = MockMvcBuilders.standaloneSetup(bloodPressureResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -118,6 +132,9 @@ public class BloodPressureResourceIntTest {
         assertThat(testBloodPressure.getTimestamp()).isEqualTo(DEFAULT_TIMESTAMP);
         assertThat(testBloodPressure.getSystolic()).isEqualTo(DEFAULT_SYSTOLIC);
         assertThat(testBloodPressure.getDiastolic()).isEqualTo(DEFAULT_DIASTOLIC);
+
+        // Validate the BloodPressure in Elasticsearch
+        verify(mockBloodPressureSearchRepository, times(1)).save(testBloodPressure);
     }
 
     @Test
@@ -137,6 +154,9 @@ public class BloodPressureResourceIntTest {
         // Validate the BloodPressure in the database
         List<BloodPressure> bloodPressureList = bloodPressureRepository.findAll();
         assertThat(bloodPressureList).hasSize(databaseSizeBeforeCreate);
+
+        // Validate the BloodPressure in Elasticsearch
+        verify(mockBloodPressureSearchRepository, times(0)).save(bloodPressure);
     }
 
     @Test
@@ -208,6 +228,9 @@ public class BloodPressureResourceIntTest {
         assertThat(testBloodPressure.getTimestamp()).isEqualTo(UPDATED_TIMESTAMP);
         assertThat(testBloodPressure.getSystolic()).isEqualTo(UPDATED_SYSTOLIC);
         assertThat(testBloodPressure.getDiastolic()).isEqualTo(UPDATED_DIASTOLIC);
+
+        // Validate the BloodPressure in Elasticsearch
+        verify(mockBloodPressureSearchRepository, times(1)).save(testBloodPressure);
     }
 
     @Test
@@ -226,6 +249,9 @@ public class BloodPressureResourceIntTest {
         // Validate the BloodPressure in the database
         List<BloodPressure> bloodPressureList = bloodPressureRepository.findAll();
         assertThat(bloodPressureList).hasSize(databaseSizeBeforeUpdate);
+
+        // Validate the BloodPressure in Elasticsearch
+        verify(mockBloodPressureSearchRepository, times(0)).save(bloodPressure);
     }
 
     @Test
@@ -244,6 +270,26 @@ public class BloodPressureResourceIntTest {
         // Validate the database is empty
         List<BloodPressure> bloodPressureList = bloodPressureRepository.findAll();
         assertThat(bloodPressureList).hasSize(databaseSizeBeforeDelete - 1);
+
+        // Validate the BloodPressure in Elasticsearch
+        verify(mockBloodPressureSearchRepository, times(1)).deleteById(bloodPressure.getId());
+    }
+
+    @Test
+    @Transactional
+    public void searchBloodPressure() throws Exception {
+        // Initialize the database
+        bloodPressureRepository.saveAndFlush(bloodPressure);
+        when(mockBloodPressureSearchRepository.search(queryStringQuery("id:" + bloodPressure.getId()), PageRequest.of(0, 20)))
+            .thenReturn(new PageImpl<>(Collections.singletonList(bloodPressure), PageRequest.of(0, 1), 1));
+        // Search the bloodPressure
+        restBloodPressureMockMvc.perform(get("/api/_search/blood-pressures?query=id:" + bloodPressure.getId()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(bloodPressure.getId().intValue())))
+            .andExpect(jsonPath("$.[*].timestamp").value(hasItem(DEFAULT_TIMESTAMP.toString())))
+            .andExpect(jsonPath("$.[*].systolic").value(hasItem(DEFAULT_SYSTOLIC)))
+            .andExpect(jsonPath("$.[*].diastolic").value(hasItem(DEFAULT_DIASTOLIC)));
     }
 
     @Test

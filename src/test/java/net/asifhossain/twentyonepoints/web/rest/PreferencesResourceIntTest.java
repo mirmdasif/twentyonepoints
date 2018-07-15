@@ -4,6 +4,7 @@ import net.asifhossain.twentyonepoints.TwentyonepointsApp;
 
 import net.asifhossain.twentyonepoints.domain.Preferences;
 import net.asifhossain.twentyonepoints.repository.PreferencesRepository;
+import net.asifhossain.twentyonepoints.repository.search.PreferencesSearchRepository;
 import net.asifhossain.twentyonepoints.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -21,12 +22,15 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
+import java.util.Collections;
 import java.util.List;
 
 
 import static net.asifhossain.twentyonepoints.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -50,6 +54,14 @@ public class PreferencesResourceIntTest {
     private PreferencesRepository preferencesRepository;
 
 
+    /**
+     * This repository is mocked in the net.asifhossain.twentyonepoints.repository.search test package.
+     *
+     * @see net.asifhossain.twentyonepoints.repository.search.PreferencesSearchRepositoryMockConfiguration
+     */
+    @Autowired
+    private PreferencesSearchRepository mockPreferencesSearchRepository;
+
     @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
@@ -69,7 +81,7 @@ public class PreferencesResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final PreferencesResource preferencesResource = new PreferencesResource(preferencesRepository);
+        final PreferencesResource preferencesResource = new PreferencesResource(preferencesRepository, mockPreferencesSearchRepository);
         this.restPreferencesMockMvc = MockMvcBuilders.standaloneSetup(preferencesResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -112,6 +124,9 @@ public class PreferencesResourceIntTest {
         Preferences testPreferences = preferencesList.get(preferencesList.size() - 1);
         assertThat(testPreferences.getWeeklyGoal()).isEqualTo(DEFAULT_WEEKLY_GOAL);
         assertThat(testPreferences.getWeightUnits()).isEqualTo(DEFAULT_WEIGHT_UNITS);
+
+        // Validate the Preferences in Elasticsearch
+        verify(mockPreferencesSearchRepository, times(1)).save(testPreferences);
     }
 
     @Test
@@ -131,6 +146,9 @@ public class PreferencesResourceIntTest {
         // Validate the Preferences in the database
         List<Preferences> preferencesList = preferencesRepository.findAll();
         assertThat(preferencesList).hasSize(databaseSizeBeforeCreate);
+
+        // Validate the Preferences in Elasticsearch
+        verify(mockPreferencesSearchRepository, times(0)).save(preferences);
     }
 
     @Test
@@ -216,6 +234,9 @@ public class PreferencesResourceIntTest {
         Preferences testPreferences = preferencesList.get(preferencesList.size() - 1);
         assertThat(testPreferences.getWeeklyGoal()).isEqualTo(UPDATED_WEEKLY_GOAL);
         assertThat(testPreferences.getWeightUnits()).isEqualTo(UPDATED_WEIGHT_UNITS);
+
+        // Validate the Preferences in Elasticsearch
+        verify(mockPreferencesSearchRepository, times(1)).save(testPreferences);
     }
 
     @Test
@@ -234,6 +255,9 @@ public class PreferencesResourceIntTest {
         // Validate the Preferences in the database
         List<Preferences> preferencesList = preferencesRepository.findAll();
         assertThat(preferencesList).hasSize(databaseSizeBeforeUpdate);
+
+        // Validate the Preferences in Elasticsearch
+        verify(mockPreferencesSearchRepository, times(0)).save(preferences);
     }
 
     @Test
@@ -252,6 +276,25 @@ public class PreferencesResourceIntTest {
         // Validate the database is empty
         List<Preferences> preferencesList = preferencesRepository.findAll();
         assertThat(preferencesList).hasSize(databaseSizeBeforeDelete - 1);
+
+        // Validate the Preferences in Elasticsearch
+        verify(mockPreferencesSearchRepository, times(1)).deleteById(preferences.getId());
+    }
+
+    @Test
+    @Transactional
+    public void searchPreferences() throws Exception {
+        // Initialize the database
+        preferencesRepository.saveAndFlush(preferences);
+        when(mockPreferencesSearchRepository.search(queryStringQuery("id:" + preferences.getId())))
+            .thenReturn(Collections.singletonList(preferences));
+        // Search the preferences
+        restPreferencesMockMvc.perform(get("/api/_search/preferences?query=id:" + preferences.getId()))
+            .andExpect(status().isOk())
+            .andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
+            .andExpect(jsonPath("$.[*].id").value(hasItem(preferences.getId().intValue())))
+            .andExpect(jsonPath("$.[*].weeklyGoal").value(hasItem(DEFAULT_WEEKLY_GOAL)))
+            .andExpect(jsonPath("$.[*].weightUnits").value(hasItem(DEFAULT_WEIGHT_UNITS.toString())));
     }
 
     @Test

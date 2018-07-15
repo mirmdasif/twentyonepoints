@@ -3,12 +3,27 @@
         <span jhiTranslate="twentyonepointsApp.waist.home.title">Waists</span>
         <button id="jh-create-entity" class="btn btn-primary float-right jh-create-entity create-waist" [routerLink]="['/waist/new']">
             <fa-icon [icon]="'plus'"></fa-icon>
-            <span  jhiTranslate="twentyonepointsApp.waist.home.createLabel">
+            <span class="hidden-sm-down"  jhiTranslate="twentyonepointsApp.waist.home.createLabel">
             Create new Waist
             </span>
         </button>
     </h2>
     <jhi-alert></jhi-alert>
+    <div class="row">
+        <div class="col-sm-12">
+            <form name="searchForm" class="form-inline">
+                <div class="input-group w-100 mt-3">
+                    <input type="text" class="form-control" [(ngModel)]="currentSearch" id="currentSearch" name="currentSearch" placeholder="{{ 'twentyonepointsApp.waist.home.search' | translate }}">
+                    <button class="input-group-append btn btn-info" (click)="search(currentSearch)">
+                        <fa-icon [icon]="'search'"></fa-icon>
+                    </button>
+                    <button class="input-group-append btn btn-danger" (click)="clear()" *ngIf="currentSearch">
+                        <fa-icon [icon]="'trash-alt'"></fa-icon>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
     <br/>
     <div class="table-responsive" *ngIf="waists">
         <table class="table table-striped">
