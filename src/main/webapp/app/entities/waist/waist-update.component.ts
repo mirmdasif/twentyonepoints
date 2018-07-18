@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { JhiAlertService } from 'ng-jhipster';
+import * as moment from 'moment';
 
 import { IWaist } from 'app/shared/model/waist.model';
 import { WaistService } from './waist.service';
@@ -30,6 +31,9 @@ export class WaistUpdateComponent implements OnInit {
         this.isSaving = false;
         this.activatedRoute.data.subscribe(({ waist }) => {
             this.waist = waist;
+            if (!this.waist.id) {
+                this.waist.date = moment();
+            }
         });
         this.userService.query().subscribe(
             (res: HttpResponse<IUser[]>) => {

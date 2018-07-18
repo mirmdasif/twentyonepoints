@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { HttpResponse, HttpErrorResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { JhiAlertService } from 'ng-jhipster';
+import * as moment from 'moment';
 
 import { IWeight } from 'app/shared/model/weight.model';
 import { WeightService } from './weight.service';
@@ -30,6 +31,10 @@ export class WeightUpdateComponent implements OnInit {
         this.isSaving = false;
         this.activatedRoute.data.subscribe(({ weight }) => {
             this.weight = weight;
+
+            if (!this.weight.id) {
+                this.weight.timestamp = moment();
+            }
         });
         this.userService.query().subscribe(
             (res: HttpResponse<IUser[]>) => {
