@@ -7,6 +7,7 @@ import { JhiAlertService } from 'ng-jhipster';
 import { IPoints } from 'app/shared/model/points.model';
 import { PointsService } from './points.service';
 import { IUser, UserService } from 'app/core';
+import * as moment from 'moment';
 
 @Component({
     selector: 'jhi-points-update',
@@ -30,6 +31,9 @@ export class PointsUpdateComponent implements OnInit {
         this.isSaving = false;
         this.activatedRoute.data.subscribe(({ points }) => {
             this.points = points;
+            if (!this.points.id) {
+                this.points.timestamp = moment();
+            }
         });
         this.userService.query().subscribe(
             (res: HttpResponse<IUser[]>) => {
