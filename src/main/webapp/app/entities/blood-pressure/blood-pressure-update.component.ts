@@ -7,6 +7,7 @@ import { JhiAlertService } from 'ng-jhipster';
 import { IBloodPressure } from 'app/shared/model/blood-pressure.model';
 import { BloodPressureService } from './blood-pressure.service';
 import { IUser, UserService } from 'app/core';
+import * as moment from 'moment';
 
 @Component({
     selector: 'jhi-blood-pressure-update',
@@ -30,6 +31,10 @@ export class BloodPressureUpdateComponent implements OnInit {
         this.isSaving = false;
         this.activatedRoute.data.subscribe(({ bloodPressure }) => {
             this.bloodPressure = bloodPressure;
+
+            if (!this.bloodPressure.id) {
+                this.bloodPressure.timestamp = moment();
+            }
         });
         this.userService.query().subscribe(
             (res: HttpResponse<IUser[]>) => {
