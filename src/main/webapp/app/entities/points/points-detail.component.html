@@ -9,18 +9,18 @@
                 <dd>
                     <span>{{points.timestamp | date:'medium'}}</span>
                 </dd>
-                <dt><span jhiTranslate="twentyonepointsApp.points.exercise">Exercise</span></dt>
-                <dd>
-                    <span>{{points.exercise}}</span>
-                </dd>
-                <dt><span jhiTranslate="twentyonepointsApp.points.meals">Meals</span></dt>
-                <dd>
-                    <span>{{points.meals}}</span>
-                </dd>
-                <dt><span jhiTranslate="twentyonepointsApp.points.alcohol">Alcohol</span></dt>
-                <dd>
-                    <span>{{points.alcohol}}</span>
-                </dd>
+                <dt>
+                    <span jhiTranslate="twentyonepointsApp.points.exercise">Exercise</span>
+                    <i class="fa fa-{{points.exercise ? 'check text-success' : 'times text-danger'}}"></i>
+                </dt>
+                <dt>
+                    <span jhiTranslate="twentyonepointsApp.points.meals">Meals</span>
+                    <i class="fa fa-{{points.meals ? 'check text-success' : 'times text-danger'}}"></i>
+                </dt>
+                <dt>
+                    <span jhiTranslate="twentyonepointsApp.points.alcohol">Alcohol</span>
+                    <i class="fa fa-{{points.alcohol ? 'check text-success' : 'times text-danger'}}"></i>
+                </dt>
                 <dt><span jhiTranslate="twentyonepointsApp.points.notes">Notes</span></dt>
                 <dd>
                     <span>{{points.notes}}</span>
