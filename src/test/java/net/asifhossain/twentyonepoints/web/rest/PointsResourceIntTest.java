@@ -1,12 +1,11 @@
 package net.asifhossain.twentyonepoints.web.rest;
 
 import net.asifhossain.twentyonepoints.TwentyonepointsApp;
-
 import net.asifhossain.twentyonepoints.domain.Points;
 import net.asifhossain.twentyonepoints.repository.PointsRepository;
+import net.asifhossain.twentyonepoints.repository.UserRepository;
 import net.asifhossain.twentyonepoints.repository.search.PointsSearchRepository;
 import net.asifhossain.twentyonepoints.web.rest.errors.ExceptionTranslator;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -22,6 +21,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.persistence.EntityManager;
 import java.time.LocalDate;
@@ -29,12 +29,13 @@ import java.time.ZoneId;
 import java.util.Collections;
 import java.util.List;
 
-
 import static net.asifhossain.twentyonepoints.web.rest.TestUtil.createFormattingConversionService;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.elasticsearch.index.query.QueryBuilders.queryStringQuery;
 import static org.hamcrest.Matchers.hasItem;
 import static org.mockito.Mockito.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -75,6 +76,9 @@ public class PointsResourceIntTest {
     private PointsSearchRepository mockPointsSearchRepository;
 
     @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
     private MappingJackson2HttpMessageConverter jacksonMessageConverter;
 
     @Autowired
@@ -86,6 +90,9 @@ public class PointsResourceIntTest {
     @Autowired
     private EntityManager em;
 
+    @Autowired
+    private WebApplicationContext webApplicationContext;
+
     private MockMvc restPointsMockMvc;
 
     private Points points;
@@ -93,7 +100,8 @@ public class PointsResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final PointsResource pointsResource = new PointsResource(pointsRepository, mockPointsSearchRepository);
+        final PointsResource pointsResource =
+            new PointsResource(pointsRepository, mockPointsSearchRepository, userRepository);
         this.restPointsMockMvc = MockMvcBuilders.standaloneSetup(pointsResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -103,7 +111,7 @@ public class PointsResourceIntTest {
 
     /**
      * Create an entity for this test.
-     *
+     * <p>
      * This is a static method, as tests for other entities might also need it,
      * if they test an entity which requires the current entity.
      */
@@ -127,8 +135,15 @@ public class PointsResourceIntTest {
     public void createPoints() throws Exception {
         int databaseSizeBeforeCreate = pointsRepository.findAll().size();
 
+        // Create security aware mock mvc
+        restPointsMockMvc = MockMvcBuilders
+            .webAppContextSetup(webApplicationContext)
+            .apply(springSecurity())
+            .build();
+
         // Create the Points
         restPointsMockMvc.perform(post("/api/points")
+            .with(user("user"))
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
             .content(TestUtil.convertObjectToJsonBytes(points)))
             .andExpect(status().isCreated());
@@ -204,7 +219,7 @@ public class PointsResourceIntTest {
             .andExpect(jsonPath("$.[*].alcohol").value(hasItem(DEFAULT_ALCOHOL)))
             .andExpect(jsonPath("$.[*].notes").value(hasItem(DEFAULT_NOTES.toString())));
     }
-    
+
 
     @Test
     @Transactional
@@ -223,6 +238,7 @@ public class PointsResourceIntTest {
             .andExpect(jsonPath("$.alcohol").value(DEFAULT_ALCOHOL))
             .andExpect(jsonPath("$.notes").value(DEFAULT_NOTES.toString()));
     }
+
     @Test
     @Transactional
     public void getNonExistingPoints() throws Exception {

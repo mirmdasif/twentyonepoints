@@ -3,7 +3,10 @@ package net.asifhossain.twentyonepoints.web.rest;
 import com.codahale.metrics.annotation.Timed;
 import net.asifhossain.twentyonepoints.domain.Points;
 import net.asifhossain.twentyonepoints.repository.PointsRepository;
+import net.asifhossain.twentyonepoints.repository.UserRepository;
 import net.asifhossain.twentyonepoints.repository.search.PointsSearchRepository;
+import net.asifhossain.twentyonepoints.security.AuthoritiesConstants;
+import net.asifhossain.twentyonepoints.security.SecurityUtils;
 import net.asifhossain.twentyonepoints.web.rest.errors.BadRequestAlertException;
 import net.asifhossain.twentyonepoints.web.rest.util.HeaderUtil;
 import net.asifhossain.twentyonepoints.web.rest.util.PaginationUtil;
@@ -43,9 +46,14 @@ public class PointsResource {
 
     private final PointsSearchRepository pointsSearchRepository;
 
-    public PointsResource(PointsRepository pointsRepository, PointsSearchRepository pointsSearchRepository) {
+    private final UserRepository userRepository;
+
+    public PointsResource(PointsRepository pointsRepository,
+                          PointsSearchRepository pointsSearchRepository,
+                          UserRepository userRepository) {
         this.pointsRepository = pointsRepository;
         this.pointsSearchRepository = pointsSearchRepository;
+        this.userRepository = userRepository;
     }
 
     /**
@@ -62,6 +70,11 @@ public class PointsResource {
         if (points.getId() != null) {
             throw new BadRequestAlertException("A new points cannot already have an ID", ENTITY_NAME, "idexists");
         }
+
+        if (!SecurityUtils.isCurrentUserInRole(AuthoritiesConstants.ADMIN)) {
+            points.setUser(userRepository.findOneByLogin(SecurityUtils.getCurrentUserLogin().get()).get());
+        }
+
         Points result = pointsRepository.save(points);
         pointsSearchRepository.save(result);
         return ResponseEntity.created(new URI("/api/points/" + result.getId()))
