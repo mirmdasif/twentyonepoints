@@ -1,10 +1,11 @@
 package net.asifhossain.twentyonepoints.repository;
 
 import net.asifhossain.twentyonepoints.domain.Points;
-import org.springframework.data.jpa.repository.*;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
-import java.util.List;
 
 /**
  * Spring Data  repository for the Points entity.
@@ -13,7 +14,11 @@ import java.util.List;
 @Repository
 public interface PointsRepository extends JpaRepository<Points, Long> {
 
-    @Query("select points from Points points where points.user.login = ?#{principal.username}")
-    List<Points> findByUserIsCurrentUser();
+    Page<Points> findAllByOrderByTimestampDesc(Pageable pageable);
 
+    @Query(
+        "select points from Points points " +
+        "where points.user.login = ?#{principal.username} order by points.timestamp desc"
+    )
+    Page<Points> findByUserIsCurrentUser(Pageable pageable);
 }
